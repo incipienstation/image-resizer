@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; img-src 'self' blob: data:; script-src 'self'; style-src 'self'; connect-src 'none'; worker-src 'self'; manifest-src 'self'; media-src 'none'; font-src 'self'; upgrade-insecure-requests"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111827" />
+    <meta
+      name="description"
+      content="이미지를 브라우저 안에서 비율 유지한 채 픽셀 단위로 업스케일/다운스케일하는 모바일 이미지 리사이저"
+    />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <title>Pixel Resize</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div class="brand">
+          <h1>Pixel Resize</h1>
+          <p>비율은 유지하고, 픽셀만 정확하게.</p>
+        </div>
+        <div class="privacy">로컬 처리</div>
+      </header>
+
+      <label class="upload" id="uploadArea" for="fileInput">
+        <div>
+          <div class="upload-icon">↥</div>
+          <strong>이미지 선택</strong>
+          <span>탭해서 사진을 고르거나 파일을 드롭하세요</span>
+        </div>
+      </label>
+      <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp,image/heic,image/heif" />
+
+      <section class="panel workspace" id="workspace" aria-live="polite">
+        <div class="preview-wrap">
+          <img id="preview" alt="업로드 이미지 미리보기" />
+          <div class="meta">
+            <span id="fileMeta">-</span>
+            <span id="sizeMeta">-</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <p class="section-title">출력 크기</p>
+          <div class="dimension-grid">
+            <label>
+              너비
+              <span class="input-shell">
+                <input id="widthInput" type="number" min="1" max="32768" inputmode="numeric" />
+                <span class="unit">px</span>
+              </span>
+            </label>
+
+            <button class="lock" type="button" aria-label="가로세로 비율 잠금" title="비율 잠금">🔒</button>
+
+            <label>
+              높이
+              <span class="input-shell">
+                <input id="heightInput" type="number" min="1" max="32768" inputmode="numeric" />
+                <span class="unit">px</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="preset-row" aria-label="배율 프리셋">
+            <button class="preset" type="button" data-scale="0.5">50%</button>
+            <button class="preset" type="button" data-scale="1">100%</button>
+            <button class="preset" type="button" data-scale="2">200%</button>
+            <button class="preset" type="button" data-scale="4">400%</button>
+          </div>
+
+          <div class="format-grid">
+            <label>
+              포맷
+              <select id="formatSelect">
+                <option value="image/png">PNG</option>
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/webp">WebP</option>
+              </select>
+            </label>
+
+            <label id="qualityLabel">
+              품질
+              <div class="quality-shell">
+                <div class="quality-top">
+                  <span>압축</span>
+                  <span id="qualityValue">92%</span>
+                </div>
+                <input id="qualityInput" type="range" min="10" max="100" value="92" />
+              </div>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="button secondary" id="replaceButton" type="button">다른 이미지</button>
+            <button class="button primary" id="downloadButton" type="button">리사이즈 & 다운로드</button>
+          </div>
+
+          <div class="status" id="status"></div>
+        </div>
+      </section>
+
+      <footer>
+        이미지는 서버로 전송되지 않습니다. 브라우저 Canvas에서만 처리됩니다.<br />
+        최대 한 변 32,768 px · 최대 32 MP · 외부 API/분석 스크립트 없음
+      </footer>
+    </main>
+
+    <canvas id="canvas" hidden></canvas>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
