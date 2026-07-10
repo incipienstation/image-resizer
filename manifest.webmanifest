@@ -1,0 +1,18 @@
+{
+  "name": "Pixel Resize",
+  "short_name": "Pixel Resize",
+  "description": "비율을 유지한 채 픽셀 단위로 이미지를 업스케일/다운스케일합니다.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
