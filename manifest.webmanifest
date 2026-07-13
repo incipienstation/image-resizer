@@ -1,7 +1,7 @@
 {
-  "name": "Pixel Resize",
-  "short_name": "Pixel Resize",
-  "description": "비율을 유지한 채 픽셀 단위로 이미지를 업스케일/다운스케일합니다.",
+  "name": "Image Resizer",
+  "short_name": "Image Resizer",
+  "description": "비율을 유지한 채 픽셀 단위로 이미지를 업스케일·다운스케일합니다.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
