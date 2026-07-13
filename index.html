@@ -106,6 +106,26 @@
             <button class="preset" type="button" data-scale="4">400%</button>
           </div>
 
+          <label class="scale-control" for="scaleInput">
+            <span class="scale-heading">
+              <span>배율 슬라이더</span>
+              <output id="scaleValue" for="scaleInput">100%</output>
+            </span>
+            <input
+              id="scaleInput"
+              type="range"
+              min="10"
+              max="400"
+              step="1"
+              value="100"
+              aria-label="이미지 배율"
+            />
+            <span class="scale-range" aria-hidden="true">
+              <span>10%</span>
+              <span>400%</span>
+            </span>
+          </label>
+
           <div class="format-grid">
             <label>
               포맷
