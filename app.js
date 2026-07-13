@@ -1,8 +1,15 @@
 "use strict";
 
+const scaleStylesheet = document.createElement("link");
+scaleStylesheet.rel = "stylesheet";
+scaleStylesheet.href = "./scale.css";
+document.head.append(scaleStylesheet);
+
 const MAX_DIMENSION = 32768;
 const MAX_OUTPUT_PIXELS = 32_000_000;
 const MAX_INPUT_BYTES = 100 * 1024 * 1024;
+const MIN_SCALE_PERCENT = 1;
+const MAX_SCALE_PERCENT = 400;
 const SUPPORTED_MIME_TYPES = new Set([
   "image/png",
   "image/jpeg",
@@ -31,6 +38,11 @@ const workspace = document.querySelector("#workspace");
 const preview = document.querySelector("#preview");
 const widthInput = document.querySelector("#widthInput");
 const heightInput = document.querySelector("#heightInput");
+const scaleInput = document.querySelector("#scaleInput");
+const scaleValue = document.querySelector("#scaleValue");
+const scaleMinValue = document.querySelector(".scale-range span:first-child");
+const scaleMaxValue = document.querySelector(".scale-range span:last-child");
+const presetButtons = [...document.querySelectorAll(".preset")];
 const formatSelect = document.querySelector("#formatSelect");
 const qualityInput = document.querySelector("#qualityInput");
 const qualityValue = document.querySelector("#qualityValue");
@@ -48,7 +60,10 @@ let sourceUrl = null;
 let originalWidth = 0;
 let originalHeight = 0;
 let aspectRatio = 1;
+let maxScalePercent = MAX_SCALE_PERCENT;
 let syncingDimension = false;
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 const setStatus = (message = "", kind = "") => {
   status.textContent = message;
@@ -102,6 +117,102 @@ const setDimensions = (width, height) => {
   widthInput.value = Math.max(1, Math.round(width));
   heightInput.value = Math.max(1, Math.round(height));
   syncingDimension = false;
+};
+
+const calculateMaxScalePercent = () => {
+  if (!originalWidth || !originalHeight) return MAX_SCALE_PERCENT;
+
+  const dimensionLimit = Math.min(
+    MAX_DIMENSION / originalWidth,
+    MAX_DIMENSION / originalHeight,
+  );
+  const pixelLimit = Math.sqrt(
+    MAX_OUTPUT_PIXELS / (originalWidth * originalHeight),
+  );
+  const safePercent = Math.floor(
+    Math.min(MAX_SCALE_PERCENT, dimensionLimit * 100, pixelLimit * 100),
+  );
+
+  return Math.max(MIN_SCALE_PERCENT, safePercent);
+};
+
+const updatePresetState = (percent) => {
+  presetButtons.forEach((button) => {
+    const buttonPercent = Math.round(Number(button.dataset.scale) * 100);
+    const isActive = buttonPercent === Math.round(percent);
+
+    button.disabled = buttonPercent > maxScalePercent;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+};
+
+const updateScaleControl = (percent) => {
+  const roundedPercent = Math.max(MIN_SCALE_PERCENT, Math.round(percent));
+
+  scaleValue.textContent = `${roundedPercent}%`;
+  scaleInput.value = String(
+    clamp(roundedPercent, MIN_SCALE_PERCENT, maxScalePercent),
+  );
+  updatePresetState(roundedPercent);
+};
+
+const applyScale = (percent, announce = false) => {
+  if (!sourceImage) return;
+
+  const boundedPercent = clamp(
+    Math.round(percent),
+    MIN_SCALE_PERCENT,
+    maxScalePercent,
+  );
+  const width = Math.max(
+    1,
+    Math.round((originalWidth * boundedPercent) / 100),
+  );
+  const height = Math.max(
+    1,
+    Math.round((originalHeight * boundedPercent) / 100),
+  );
+
+  setDimensions(width, height);
+  updateScaleControl(boundedPercent);
+  setStatus(
+    `${boundedPercent}% · ${width.toLocaleString()} × ${height.toLocaleString()} px`,
+    announce ? "success" : "",
+  );
+};
+
+const configureScaleControl = () => {
+  maxScalePercent = calculateMaxScalePercent();
+  scaleInput.min = String(MIN_SCALE_PERCENT);
+  scaleInput.max = String(maxScalePercent);
+  scaleMinValue.textContent = `${MIN_SCALE_PERCENT}%`;
+  scaleMaxValue.textContent = `${maxScalePercent}%`;
+
+  const initialPercent = Math.min(100, maxScalePercent);
+  applyScale(initialPercent);
+
+  return initialPercent;
+};
+
+const syncScaleFromManualInput = (percent) => {
+  const roundedPercent = Math.max(MIN_SCALE_PERCENT, Math.round(percent));
+  const width = Number(widthInput.value);
+  const height = Number(heightInput.value);
+
+  updateScaleControl(roundedPercent);
+
+  if (roundedPercent > maxScalePercent) {
+    setStatus(
+      `안전 한도 ${maxScalePercent}%를 초과했습니다. 배율이나 픽셀 크기를 줄여주세요.`,
+      "error",
+    );
+    return;
+  }
+
+  setStatus(
+    `${roundedPercent}% · ${Math.round(width).toLocaleString()} × ${Math.round(height).toLocaleString()} px`,
+  );
 };
 
 const validateDimensions = () => {
@@ -180,12 +291,20 @@ const loadImageFile = async (file) => {
     preview.src = sourceUrl;
     fileMeta.textContent = `${file.name} · ${formatBytes(file.size)}`;
     sizeMeta.textContent = `${originalWidth.toLocaleString()} × ${originalHeight.toLocaleString()} px`;
-    setDimensions(originalWidth, originalHeight);
+    const initialPercent = configureScaleControl();
     resetOutputDefaults();
 
     uploadArea.style.display = "none";
     workspace.classList.add("active");
-    setStatus("원본 비율 잠금 · 출력 재인코딩 시 EXIF/GPS 메타데이터 제거", "success");
+
+    const scaleNotice =
+      initialPercent < 100
+        ? ` · 원본이 커서 안전 한도 ${maxScalePercent}%로 시작`
+        : "";
+    setStatus(
+      `원본 비율 잠금 · EXIF/GPS 메타데이터 제거${scaleNotice}`,
+      "success",
+    );
   } catch (error) {
     URL.revokeObjectURL(nextUrl);
     setStatus(error instanceof Error ? error.message : "이미지를 불러오지 못했습니다.", "error");
@@ -228,7 +347,7 @@ widthInput.addEventListener("input", () => {
   syncingDimension = true;
   heightInput.value = Math.max(1, Math.round(width / aspectRatio));
   syncingDimension = false;
-  setStatus("");
+  syncScaleFromManualInput((width / originalWidth) * 100);
 });
 
 heightInput.addEventListener("input", () => {
@@ -240,17 +359,24 @@ heightInput.addEventListener("input", () => {
   syncingDimension = true;
   widthInput.value = Math.max(1, Math.round(height * aspectRatio));
   syncingDimension = false;
-  setStatus("");
+  syncScaleFromManualInput((height / originalHeight) * 100);
 });
 
-document.querySelectorAll(".preset").forEach((button) => {
+presetButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    if (!sourceImage) return;
+    if (!sourceImage || button.disabled) return;
 
-    const scale = Number(button.dataset.scale);
-    setDimensions(originalWidth * scale, originalHeight * scale);
-    setStatus(`${Math.round(scale * 100)}% 배율 적용`, "success");
+    const percent = Math.round(Number(button.dataset.scale) * 100);
+    applyScale(percent, true);
   });
+});
+
+scaleInput.addEventListener("input", () => {
+  applyScale(Number(scaleInput.value));
+});
+
+scaleInput.addEventListener("change", () => {
+  applyScale(Number(scaleInput.value), true);
 });
 
 formatSelect.addEventListener("change", () => {
