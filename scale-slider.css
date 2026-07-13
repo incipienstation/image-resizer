@@ -1,0 +1,57 @@
+.scale-control {
+  display: block;
+  margin-top: 12px;
+  padding: 13px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.48);
+}
+
+.scale-heading,
+.scale-range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scale-heading {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+#scaleValue {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+#scaleInput {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  accent-color: var(--accent-2);
+  touch-action: pan-y;
+}
+
+.scale-range {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.preset.active {
+  border-color: var(--accent-2);
+  color: #f5f3ff;
+  background: rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12);
+}
+
+.preset:focus-visible,
+#scaleInput:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
