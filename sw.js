@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "image-resizer-v2";
+const CACHE_NAME = "image-resizer-v3";
 const ASSET_PATHS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 const ALLOWED_URLS = new Set(ASSET_PATHS.map((path) => new URL(path, self.registration.scope).href));
 
