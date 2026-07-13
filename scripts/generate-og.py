@@ -145,7 +145,7 @@ fill_rect(152, 110, 8, 30, (255, 255, 255))
 fill_rect(130, 110, 30, 8, (255, 255, 255))
 
 # Main text.
-draw_text("PIXEL RESIZER", 84, 232, 8, (248, 250, 252))
+draw_text("IMAGE RESIZER", 84, 232, 8, (248, 250, 252))
 draw_text("LOCAL ONLY / NO UPLOAD", 88, 323, 4, (167, 139, 250))
 draw_text("UP OR DOWN / KEEP RATIO", 88, 374, 3, (148, 163, 184))
 
