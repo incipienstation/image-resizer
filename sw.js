@@ -1,10 +1,11 @@
 "use strict";
 
-const CACHE_NAME = "image-resizer-v5";
+const CACHE_NAME = "image-resizer-v6";
 const ASSET_PATHS = [
   "./",
   "./index.html",
   "./style.css",
+  "./scale.css",
   "./scale-slider.css",
   "./app.js",
   "./scale-slider.js",
